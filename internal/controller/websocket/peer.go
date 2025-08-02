@@ -24,7 +24,7 @@ func NewPeer(id string, conn *websocket.Conn, hub *Hub) *Peer {
 
 func (p *Peer) ReadMessages() {
 	defer func() {
-		p.hub.Unregister(p)
+		p.hub.unregister <- p
 		p.Conn.Close()
 	}()
 
@@ -39,8 +39,13 @@ func (p *Peer) ReadMessages() {
 			continue
 		}
 
-		signal.From = p.ID
-		p.hub.broadcast <- signal
+		switch signal.Type {
+		case "offer", "answer", "candidate":
+			signal.From = p.ID
+			p.hub.broadcast <- signal
+		default:
+			continue
+		}
 	}
 }
 
