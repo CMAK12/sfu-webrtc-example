@@ -22,7 +22,9 @@ func NewHandler(logger *zap.Logger, hub *websocket.Hub) *Handler {
 func (h *Handler) InitRoutes() *http.ServeMux {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/ws", h.handleSignaling)
+	hndl := h.loggingMiddleware(http.HandlerFunc(h.handleSignaling))
+
+	mux.Handle("/ws", hndl)
 
 	return mux
 }

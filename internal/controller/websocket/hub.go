@@ -7,7 +7,8 @@ import (
 
 type SignalingMessage struct {
 	Type    string          `json:"type"`
-	PeerID  string          `json:"peerId"`
+	To      string          `json:"to"`
+	From    string          `json:"from"`
 	Payload json.RawMessage `json:"payload"`
 }
 
@@ -36,7 +37,7 @@ func (h *Hub) Run() {
 		case unregister := <-h.unregister:
 			h.Unregister(unregister)
 		case message := <-h.broadcast:
-			h.Broadcast(message)
+			h.RouteMessage(message)
 		}
 	}
 }
@@ -58,7 +59,7 @@ func (h *Hub) Unregister(peer *Peer) {
 	}
 }
 
-func (h *Hub) Broadcast(message SignalingMessage) {
+func (h *Hub) RouteMessage(message SignalingMessage) {
 	h.mux.RLock()
 	defer h.mux.RUnlock()
 
@@ -67,7 +68,7 @@ func (h *Hub) Broadcast(message SignalingMessage) {
 		return
 	}
 
-	reciever := h.clients[message.PeerID]
+	reciever := h.clients[message.To]
 	if reciever != nil {
 		reciever.send <- messageBytes
 	}

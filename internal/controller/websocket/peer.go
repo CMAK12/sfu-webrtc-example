@@ -39,6 +39,7 @@ func (p *Peer) ReadMessages() {
 			continue
 		}
 
+		signal.From = p.ID
 		p.hub.broadcast <- signal
 	}
 }
